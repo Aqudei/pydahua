@@ -2,20 +2,25 @@
 
 import requests
 from requests.auth import HTTPDigestAuth
+from .logging_config import setup_logger
 
 
 class DahuaIPC:
     def __init__(self, ip, username, password, port=80):
         self.base_url = f"http://{ip}:{port}/cgi-bin"
         self.auth = HTTPDigestAuth(username, password)
+        self.logger = setup_logger()
 
     def _get(self, path, params=None):
         url = f"{self.base_url}/{path}"
         try:
+            self.logger.debug(f"GET {url} params={params}")
             response = requests.get(url, auth=self.auth, params=params, timeout=10)
             response.raise_for_status()
+            self.logger.debug(f"Response: {response.status_code}")
             return response.text
         except requests.RequestException as e:
+            self.logger.error(f"HTTP request failed: {e}")
             raise RuntimeError(f"Request failed: {e}")
 
     def get_device_info(self):
