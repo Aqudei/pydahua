@@ -4,6 +4,10 @@ import requests
 from requests.auth import HTTPDigestAuth
 from .logging_config import setup_logger
 
+FOCUS_MODE_MAP = {"0": "Manual", "1": "Auto", "2": "SemiAuto", "3": "Infinity"}
+
+FOCUS_MODE_REVERSE_MAP = {v: int(k) for k, v in FOCUS_MODE_MAP.items()}
+
 
 class DahuaIPC:
     def __init__(self, ip, username, password, port=80):
@@ -42,21 +46,30 @@ class DahuaIPC:
             return response.content  # binary image data
         except requests.RequestException as e:
             raise RuntimeError(f"Snapshot failed: {e}")
+        
+    def get_video_input_capabilities(self,channel=0):
+        
+        return self._get(
+            "devVideoInput.cgi",
+            {"action": "getCaps", "channel":channel}
+        )
+    def set_focus_mode(self, mode="Auto", channel=0):
+        """
+        Set focus mode using numeric value. mode can be 'Auto', 'Manual', etc.
+        """
+        value = FOCUS_MODE_REVERSE_MAP.get(mode)
+        if value is None:
+            raise ValueError(
+                f"Invalid mode '{mode}'. Expected one of: {list(FOCUS_MODE_REVERSE_MAP)}"
+            )
 
-    def auto_focus(self, channel=0):
-        """
-        Triggers auto-focus on the specified channel.
-        Equivalent to pressing the 'AF' (Auto Focus) button.
-        """
-        params = {
-            "action": "start",
-            "channel": channel,
-            "code": "AutoFocus",
-            "arg1": 0,
-            "arg2": 1,
-            "arg3": 0,
-        }
-        return self._get("ptz.cgi", params)
+        return self._get(
+            "configManager.cgi",
+            {"action": "setConfig", f"VideoInFocus[{channel}].FocusMode": value},
+        )
+
+    def autofocus(self, channel=0):
+        return self._set(**{f'VideoInOptions[{cha}].FocusAuto': True})
 
     def ptz_control(self, action, channel=0, code="Left", arg1=0, arg2=1, arg3=0):
         """
@@ -75,6 +88,20 @@ class DahuaIPC:
 
     def reboot(self):
         return self._get("reboot.cgi")
+
+    def get_focus_mode(self, channel=0):
+        """
+        Get current focus mode for a given channel.
+        """
+        result = self._get(
+            "configManager.cgi",
+            {"action": "getConfig", "name": f"VideoInFocus[{channel}]"},
+        )
+
+        for line in result.splitlines():
+            if "FocusMode=" in line or "Mode" in line:
+                return line.split("=")[1].strip()
+        return None
 
     def focus_near(self, action="start", channel=0):
         return self.ptz_control(action=action, code="FocusNear", channel=channel)
@@ -158,3 +185,20 @@ class DahuaIPC:
     def set_image_settings(self, channel=0, **kwargs):
         config = {f"VideoInImage[{channel}].{k}": v for k, v in kwargs.items()}
         return self._get("configManager.cgi", {"action": "setConfig", **config})
+
+    def get_available_channels(self):
+        """
+        Returns a list of available channel indices from the device.
+        """
+        result = self._get(
+            "configManager.cgi", {"action": "getConfig", "name": "ChannelTitle"}
+        )
+        channels = []
+        for line in result.splitlines():
+            if "table.ChannelTitle[" in line:
+                try:
+                    idx = int(line.split("[")[1].split("]")[0])
+                    channels.append(idx)
+                except (IndexError, ValueError):
+                    continue
+        return sorted(set(channels))

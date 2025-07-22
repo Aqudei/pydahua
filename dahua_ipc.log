@@ -1,0 +1,1 @@
+2025-07-22 15:58:25 [ERROR] dahua_ipc: HTTP request failed: HTTPConnectionPool(host='192.168.107.83', port=80): Max retries exceeded with url: /cgi-bin/configManager.cgi?action=getConfig&name=ChannelTitle (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x0000017AD59B7140>, 'Connection to 192.168.107.83 timed out. (connect timeout=10)'))

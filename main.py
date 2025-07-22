@@ -11,6 +11,8 @@ if __name__ == "__main__":
         os.environ.get("CAM_USER"),
         os.environ.get("CAM_PASS"),
     )
-    
-    
-    
+
+   
+    response = dahua.focus_near()
+    print("auto_focus() response:")
+    print(response)
