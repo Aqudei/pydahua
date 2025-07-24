@@ -4,11 +4,13 @@ from requests.auth import HTTPDigestAuth
 from dahua_ipc.utils import parse_response
 
 
-DAY_NIGHT_COLOR = {
+DAY_NIGHT_COLOR_MAP = {
     0: "always multicolor",
     1: "autoswitch along with brightness",
     2: "always monochrome",
 }
+
+CONFIG_NO_MAP = {0: "normal", 1: "day", 2: "night"}
 
 
 class DahuaCameraAPI:
@@ -43,26 +45,33 @@ class DahuaCameraAPI:
             return
 
         j = parse_response(response)
-        channel0_option = next(j.get("table", {}).get("VideoInOptions", []), None)
-        return DAY_NIGHT_COLOR.get(channel0_option.get("DayNightColor", -1))
+        channel0_option = j.get("table", {}).get("VideoInOptions", [])[0]
+
+        # return option code and description
+        return channel0_option.get("DayNightColor", -1), DAY_NIGHT_COLOR_MAP.get(
+            channel0_option.get("DayNightColor", -1)
+        )
 
     def set_color_mode(self, mode, channel=0):
         # mode: 0 = Auto, 1 = Color, 2 = B/W
         return self._set(
             "cgi-bin/configManager.cgi",
-            {"action": "setConfig", f"VideoInMode[{channel}].Mode": mode},
+            {"action": "setConfig", f"VideoInMode[{channel}].DayNightColor": mode},
         )
 
     # 3 & 4: Zoom Level
-    def get_zoom_level(self, channel=0):
-        return self._get(
-            "cgi-bin/devVideoInput.cgi", {"action": "getZoom", "channel": channel}
+    def get_zoom_level(self):
+        response = self._get(
+            "cgi-bin/configManager.cgi", {"action": "getConfig", "name": "VideoInZoom"}
         )
+
+        parsed = parse_response(response)
+        return parsed
 
     def set_zoom_level(self, zoom, channel=0):
         return self._set(
-            "cgi-bin/devVideoInput.cgi",
-            {"action": "setZoom", "channel": channel, "zoom": zoom},
+            "cgi-bin/configManager.cgi",
+            {"action": "setConfig", f"VideoInZoom[{channel}][0]": zoom},
         )
 
     # 5 & 6: Focus
