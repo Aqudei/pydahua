@@ -1,6 +1,15 @@
 import requests
 from requests.auth import HTTPDigestAuth
 
+from dahua_ipc.utils import parse_response
+
+
+DAY_NIGHT_COLOR = {
+    0: "always multicolor",
+    1: "autoswitch along with brightness",
+    2: "always monochrome",
+}
+
 
 class DahuaCameraAPI:
     def __init__(self, host, username, password):
@@ -20,72 +29,70 @@ class DahuaCameraAPI:
         return response.text
 
     # 1 & 2: Color Mode
-    def get_video_input_options(self, channel=0):
-        data = self._get("cgi-bin/configManager.cgi", {
-            "action": "getConfig",
-            "name": f"VideoInOptions"
-        })
+    def get_video_input_options(self):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", "name": f"VideoInOptions"},
+        )
         return data
-
 
     # 1 & 2: Color Mode
     def get_color_mode(self, channel=0):
-        data = self._get("cgi-bin/configManager.cgi", {
-            "action": "getConfig",
-            "name": f"VideoInMode[{channel}]"
-        })
-        return data
+        response = self.get_video_input_options()
+        if not response:
+            return
+
+        j = parse_response(response)
+        channel0_option = next(j.get("table", {}).get("VideoInOptions", []), None)
+        return DAY_NIGHT_COLOR.get(channel0_option.get("DayNightColor", -1))
 
     def set_color_mode(self, mode, channel=0):
         # mode: 0 = Auto, 1 = Color, 2 = B/W
-        return self._set("cgi-bin/configManager.cgi", {
-            "action": "setConfig",
-            f"VideoInMode[{channel}].Mode": mode
-        })
+        return self._set(
+            "cgi-bin/configManager.cgi",
+            {"action": "setConfig", f"VideoInMode[{channel}].Mode": mode},
+        )
 
     # 3 & 4: Zoom Level
     def get_zoom_level(self, channel=0):
-        return self._get("cgi-bin/devVideoInput.cgi", {
-            "action": "getZoom",
-            "channel": channel
-        })
+        return self._get(
+            "cgi-bin/devVideoInput.cgi", {"action": "getZoom", "channel": channel}
+        )
 
     def set_zoom_level(self, zoom, channel=0):
-        return self._set("cgi-bin/devVideoInput.cgi", {
-            "action": "setZoom",
-            "channel": channel,
-            "zoom": zoom
-        })
+        return self._set(
+            "cgi-bin/devVideoInput.cgi",
+            {"action": "setZoom", "channel": channel, "zoom": zoom},
+        )
 
     # 5 & 6: Focus
     def get_focus(self, channel=0):
-        return self._get("cgi-bin/devVideoInput.cgi", {
-            "action": "getFocus",
-            "channel": channel
-        })
+        return self._get(
+            "cgi-bin/devVideoInput.cgi", {"action": "getFocus", "channel": channel}
+        )
 
     def set_focus(self, focus, channel=0):
-        return self._set("cgi-bin/devVideoInput.cgi", {
-            "action": "setFocus",
-            "channel": channel,
-            "focus": focus
-        })
+        return self._set(
+            "cgi-bin/devVideoInput.cgi",
+            {"action": "setFocus", "channel": channel, "focus": focus},
+        )
 
     # 7: Autofocus
     def autofocus(self, channel=0):
-        return self._set("cgi-bin/devVideoInput.cgi", {
-            "action": "autoFocus",
-            "channel": channel
-        })
+        return self._set(
+            "cgi-bin/devVideoInput.cgi", {"action": "autoFocus", "channel": channel}
+        )
 
     # 8a-d: Exposure Settings
     def get_exposure(self, channel=0):
-        return self._get("cgi-bin/configManager.cgi", {
-            "action": "getConfig",
-            f"name": f"VideoInExposure[{channel}]"
-        })
+        return self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", f"name": f"VideoInExposure[{channel}]"},
+        )
 
-    def set_exposure(self, channel=0, gain=None, exposure=None, iris=None, shutter=None):
+    def set_exposure(
+        self, channel=0, gain=None, exposure=None, iris=None, shutter=None
+    ):
         params = {
             "action": "setConfig",
         }
@@ -102,12 +109,20 @@ class DahuaCameraAPI:
 
     # 9a-e: Image Settings
     def get_image_settings(self, channel=0):
-        return self._get("cgi-bin/configManager.cgi", {
-            "action": "getConfig",
-            f"name": f"VideoInImage[{channel}]"
-        })
+        return self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", f"name": f"VideoInImage[{channel}]"},
+        )
 
-    def set_image_settings(self, channel=0, brightness=None, contrast=None, saturation=None, sharpness=None, gamma=None):
+    def set_image_settings(
+        self,
+        channel=0,
+        brightness=None,
+        contrast=None,
+        saturation=None,
+        sharpness=None,
+        gamma=None,
+    ):
         params = {
             "action": "setConfig",
         }
