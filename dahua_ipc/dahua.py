@@ -20,6 +20,15 @@ class DahuaCameraAPI:
         return response.text
 
     # 1 & 2: Color Mode
+    def get_video_input_options(self, channel=0):
+        data = self._get("cgi-bin/configManager.cgi", {
+            "action": "getConfig",
+            "name": f"VideoInOptions"
+        })
+        return data
+
+
+    # 1 & 2: Color Mode
     def get_color_mode(self, channel=0):
         data = self._get("cgi-bin/configManager.cgi", {
             "action": "getConfig",
