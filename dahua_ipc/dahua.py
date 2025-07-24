@@ -30,17 +30,74 @@ class DahuaCameraAPI:
         response.raise_for_status()
         return response.text
 
-    # 1 & 2: Color Mode
-    def get_video_input_options(self):
+    def SetVideoInExposure(self, name, value, channel=0, configNo=0):
         data = self._get(
             "cgi-bin/configManager.cgi",
-            {"action": "getConfig", "name": f"VideoInOptions"},
+            {
+                "action": "setConfig",
+                f"VideoInExposure[{channel}][{configNo}].{name}": value,
+            },
         )
+
         return data
 
+    def GetVideoInColor(self):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", "name": f"VideoInColor"},
+        )
+
+        return parse_response(data)
+
+    def SetVideoInColor(self, name, value, channel=0, configNo=0):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {
+                "action": "setConfig",
+                f"VideoInColor[{channel}][{configNo}].{name}": value,
+            },
+        )
+
+        return data  # OK OR ERROR
+
+    def GetVideoInSharpness(self):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", "name": "VideoInSharpness"},
+        )
+
+        return parse_response(data)
+
+    def SetVideoInSharpness(self, name, value, channel=0, config_no=0):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {
+                "action": "setConfig",
+                f"VideoInSharpness[{channel}][{config_no}].{name}": value,
+            },
+        )
+
+        return data
+
+    def GetVideoInExposure(self):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", "name": "VideoInExposure"},
+        )
+
+        return parse_response(data)
+
+    def GetVideoInOptionsConfig(self):
+        data = self._get(
+            "cgi-bin/configManager.cgi",
+            {"action": "getConfig", "name": "VideoInOptions"},
+        )
+
+        return parse_response(data)
+
     # 1 & 2: Color Mode
-    def get_color_mode(self, channel=0):
-        response = self.get_video_input_options()
+    def GetColorMode(self, channel=0):
+        response = self.GetVideoInOptionsConfig()
         if not response:
             return
 
@@ -60,7 +117,7 @@ class DahuaCameraAPI:
         )
 
     # 3 & 4: Zoom Level
-    def get_zoom_level(self):
+    def GetVideoInZoom(self):
         response = self._get(
             "cgi-bin/configManager.cgi", {"action": "getConfig", "name": "VideoInZoom"}
         )
@@ -68,82 +125,55 @@ class DahuaCameraAPI:
         parsed = parse_response(response)
         return parsed
 
-    def set_zoom_level(self, zoom, channel=0):
+    def SetVideoInZoom(self, name, value, channel=0, config_no=0):
         return self._set(
             "cgi-bin/configManager.cgi",
-            {"action": "setConfig", f"VideoInZoom[{channel}][0]": zoom},
+            {
+                "action": "setConfig",
+                f"VideoInZoom[{channel}][{config_no}].{name}": value,
+            },
         )
 
     # 5 & 6: Focus
-    def get_focus(self, channel=0):
-        return self._get(
-            "cgi-bin/devVideoInput.cgi", {"action": "getFocus", "channel": channel}
+    def GetFocusStatus(self, channel=0):
+        response = self._get(
+            "cgi-bin/devVideoInput.cgi",
+            {"action": "getFocusStatus", "channel": channel},
         )
 
-    def set_focus(self, focus, channel=0):
+        return parse_response(response)
+
+    def AdjustFocus(self, focus, zoom, channel=0):
         return self._set(
             "cgi-bin/devVideoInput.cgi",
-            {"action": "setFocus", "channel": channel, "focus": focus},
+            {"action": "adjustFocus", "channel": channel, "focus": focus, "zoom": zoom},
         )
 
     # 7: Autofocus
-    def autofocus(self, channel=0):
+    def AutoFocus(self, channel=0):
         return self._set(
             "cgi-bin/devVideoInput.cgi", {"action": "autoFocus", "channel": channel}
         )
 
-    # 8a-d: Exposure Settings
-    def get_exposure(self, channel=0):
-        return self._get(
-            "cgi-bin/configManager.cgi",
-            {"action": "getConfig", f"name": f"VideoInExposure[{channel}]"},
-        )
-
     def set_exposure(
-        self, channel=0, gain=None, exposure=None, iris=None, shutter=None
+        self,
+        channel=0,
+        config_no=0,
+        gain=None,
+        exposure=None,
+        iris=None,
+        shutter: bool = None,
     ):
         params = {
             "action": "setConfig",
         }
         if gain is not None:
-            params[f"VideoInExposure[{channel}].Gain"] = gain
+            params[f"VideoInExposure[{channel}][{config_no}].Gain"] = gain
         if exposure is not None:
-            params[f"VideoInExposure[{channel}].ExposureCompensation"] = exposure
+            params[f"VideoInExposure[{channel}][{config_no}].Compensation"] = exposure
         if iris is not None:
-            params[f"VideoInExposure[{channel}].Iris"] = iris
+            params[f"VideoInExposure[{channel}][{config_no}].Iris"] = iris
         if shutter is not None:
-            params[f"VideoInExposure[{channel}].Shutter"] = shutter
-
-        return self._set("cgi-bin/configManager.cgi", params)
-
-    # 9a-e: Image Settings
-    def get_image_settings(self, channel=0):
-        return self._get(
-            "cgi-bin/configManager.cgi",
-            {"action": "getConfig", f"name": f"VideoInImage[{channel}]"},
-        )
-
-    def set_image_settings(
-        self,
-        channel=0,
-        brightness=None,
-        contrast=None,
-        saturation=None,
-        sharpness=None,
-        gamma=None,
-    ):
-        params = {
-            "action": "setConfig",
-        }
-        if brightness is not None:
-            params[f"VideoInImage[{channel}].Brightness"] = brightness
-        if contrast is not None:
-            params[f"VideoInImage[{channel}].Contrast"] = contrast
-        if saturation is not None:
-            params[f"VideoInImage[{channel}].Saturation"] = saturation
-        if sharpness is not None:
-            params[f"VideoInImage[{channel}].Sharpness"] = sharpness
-        if gamma is not None:
-            params[f"VideoInImage[{channel}].Gamma"] = gamma
+            params[f"VideoInExposure[{channel}][{config_no}].SlowShutter"] = shutter
 
         return self._set("cgi-bin/configManager.cgi", params)
