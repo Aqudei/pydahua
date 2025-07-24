@@ -18,4 +18,5 @@ if __name__ == "__main__":
 
     print("GetFocusStatus()\n",dahua.GetFocusStatus())
     
-    
+    print("Perform AutoFocus:")
+    dahua.AutoFocus()
