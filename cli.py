@@ -83,7 +83,7 @@ def main():
 
     elif args.command == "autofocus":
         print("Triggering autofocus...")
-        print(cam.autofocus(channel=args.channel))
+        print(cam.AutoFocus(channel=args.channel))
         
     elif args.command == "focus-near":
         print("Triggering focusnear...")

@@ -17,6 +17,8 @@ if __name__ == "__main__":
     # print(response)
     
     
-    response = dahua.SetVideoInOptionsConfig(channel=0,key="FocusMode",value=3)
-    print("SetVideoInOptionsConfig() response:")
+    response = dahua.GetVideoColorConfig()
+    print("GetVideoColorConfig() response:")
     print(response)
+    
+    

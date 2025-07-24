@@ -65,16 +65,17 @@ class DahuaIPC:
             {"action": "setConfig", f"VideoInOptions[{channel}].{key}": value},
         )
 
-    def set_focus_mode(self, mode=3, channel=0):
 
+    def AutoFocus(self, channel=0):
         return self._get(
-            "configManager.cgi",
-            {"action": "setConfig", f"VideoInOptions[{channel}].FocusMode": mode},
+            "devVideoInput.cgi", {"action": "autoFocus", "channel": channel}
         )
-
-    def autofocus(self, channel=0):
-        return self._get(**{f"VideoInOptions[{channel}].FocusAuto": True})
-
+        
+    def GetVideoColorConfig(self):
+        return self._get(
+            "configManager.cgi", {"action": "getConfig", "name": "VideoColor"}
+        )    
+    
     def ptz_control(self, action, channel=0, code="Left", arg1=0, arg2=1, arg3=0):
         """
         PTZ control example: code="Left", action="start"/"stop"
