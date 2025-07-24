@@ -27,27 +27,14 @@ class DahuaIPC:
             self.logger.error(f"HTTP request failed: {e}")
             raise RuntimeError(f"Request failed: {e}")
 
-    def get_device_info(self):
-        return self._get("device.cgi", {"action": "getCurrentDevice"})
+    def SetVideoInOptionsConfig(self, channel=0, key=None, value=None):
 
-    def get_config(self, name):
-        return self._get("configManager.cgi", {"action": "getConfig", "name": name})
-
-    def take_snapshot(self, channel=0):
-        """
-        Capture snapshot from camera. May save to file using response.content
-        """
-        path = "snapshot.cgi"
-        params = {"channel": channel}
-        url = f"{self.base_url}/{path}"
-        try:
-            response = requests.get(url, auth=self.auth, params=params, timeout=10)
-            response.raise_for_status()
-            return response.content  # binary image data
-        except requests.RequestException as e:
-            raise RuntimeError(f"Snapshot failed: {e}")
-
-    def GetVideoInOptionsConfig(self, channel=0):
+        return self._get(
+            "configManager.cgi",
+            {"action": "setConfig", f"VideoInOptions[{channel}].{key}": value},
+        )
+        
+    def GetVideoInOptionsConfig(self):
 
         return self._get(
             "configManager.cgi", {"action": "getConfig", "name": "VideoInOptions"}
@@ -58,14 +45,6 @@ class DahuaIPC:
             "devVideoInput.cgi", {"action": "getCaps", "channel": channel}
         )
 
-    def SetVideoInOptionsConfig(self, channel=0, key="FocusMode", value=None):
-
-        return self._get(
-            "configManager.cgi",
-            {"action": "setConfig", f"VideoInOptions[{channel}].{key}": value},
-        )
-
-
     def AutoFocus(self, channel=0):
         return self._get(
             "devVideoInput.cgi", {"action": "autoFocus", "channel": channel}
@@ -75,6 +54,12 @@ class DahuaIPC:
         return self._get(
             "configManager.cgi", {"action": "getConfig", "name": "VideoColor"}
         )    
+    
+    def SetColorConfig(self, paramName, paramValue):
+        return self._get(
+            "configManager.cgi", {"action": "setConfig", f"{paramName}": paramValue}
+        )    
+    
     
     def ptz_control(self, action, channel=0, code="Left", arg1=0, arg2=1, arg3=0):
         """
