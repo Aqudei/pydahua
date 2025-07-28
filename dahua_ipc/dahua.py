@@ -41,13 +41,15 @@ class DahuaCameraAPI:
 
         return data
 
-    def GetVideoInColor(self):
+    def GetVideoInColor(self, channel=0):
         data = self._get(
             "cgi-bin/configManager.cgi",
-            {"action": "getConfig", "name": f"VideoInColor"},
+            {"action": "getConfig", "name": "VideoInColor"},
         )
 
-        return parse_response(data)
+        response = parse_response(data)
+        return response.get("table",{}).get("VideoInColor",[])[0]
+    
 
     def SetVideoInColor(self, name, value, channel=0, configNo=0):
         data = self._get(
