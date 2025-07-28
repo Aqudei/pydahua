@@ -49,7 +49,7 @@ class DahuaCameraAPI:
 
         response = parse_table_like_response(data)
 
-        return response.get("VideoInColor", {}).get(channel)
+        return response.get("table.VideoInColor", {}).get(channel)
 
     def SetVideoInColor(self, name, value, channel=0, configNo=0):
         data = self._get(
@@ -70,7 +70,7 @@ class DahuaCameraAPI:
 
         response = parse_table_like_response(data)
 
-        return response.get("VideoInSharpness", {}).get(channel)
+        return response.get("table.VideoInSharpness", {}).get(channel)
 
     def SetVideoInSharpness(self, name, value, channel=0, config_no=0):
         data = self._get(
@@ -91,7 +91,7 @@ class DahuaCameraAPI:
 
         response = parse_table_like_response(data)
 
-        return response.get("VideoInExposure", {}).get(channel)
+        return response.get("table.VideoInExposure", {}).get(channel)
 
     def GetVideoInOptionsConfig(self, channel=0):
         data = self._get(
@@ -100,7 +100,7 @@ class DahuaCameraAPI:
         )
 
         r = parse_table_like_response(data)
-        return r.get("VideoInOptions", {}).get(channel)
+        return r.get("table.VideoInOptions", {}).get(channel)
 
     # 1 & 2: Color Mode
     def GetColorMode(self, channel=0):
@@ -114,13 +114,13 @@ class DahuaCameraAPI:
         )
 
     # 3 & 4: Zoom Level
-    def GetVideoInZoom(self):
+    def GetVideoInZoom(self, channel=0):
         response = self._get(
             "cgi-bin/configManager.cgi", {"action": "getConfig", "name": "VideoInZoom"}
         )
 
         parsed = parse_table_like_response(response)
-        return parsed
+        return parsed.get("table.VideoInZoom",{}).get(channel)
 
     def SetVideoInZoom(self, name, value, channel=0, config_no=0):
         return self._set(
@@ -138,7 +138,8 @@ class DahuaCameraAPI:
             {"action": "getFocusStatus", "channel": channel},
         )
 
-        return parse_table_like_response(response)
+        r = parse_table_like_response(response)
+        return r.get('status')
 
     def AdjustFocus(self, focus, zoom, channel=0):
         return self._set(

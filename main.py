@@ -5,6 +5,7 @@ import os
 import argparse
 
 from dahua_ipc.dahua import DahuaCameraAPI
+from dahua_ipc.utils import parse_table_like_response
 
 load_dotenv()
 
@@ -40,3 +41,9 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error calling {method_name}: {e}")
         print()
+    
+    
+    # with open("./VideoCaps.txt",'rt') as target:
+    #     r = parse_table_like_response(target.read())
+    #     print(r)
+    
