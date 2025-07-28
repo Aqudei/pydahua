@@ -1,7 +1,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 
-from dahua_ipc.utils import parse_response
+from dahua_ipc.utils import parse_table_like_response
 
 
 DAY_NIGHT_COLOR_MAP = {
@@ -47,8 +47,8 @@ class DahuaCameraAPI:
             {"action": "getConfig", "name": "VideoInColor"},
         )
 
-        response = parse_response(data)
-        return response.get("table", {}).get("VideoInColor", {}).get("0")
+        response = parse_table_like_response(data)
+        return response.get("table", {}).get("VideoInColor", {}).get(f"{channel}")
 
     def SetVideoInColor(self, name, value, channel=0, configNo=0):
         data = self._get(
@@ -67,7 +67,7 @@ class DahuaCameraAPI:
             {"action": "getConfig", "name": "VideoInSharpness"},
         )
 
-        return parse_response(data)
+        return parse_table_like_response(data)
 
     def SetVideoInSharpness(self, name, value, channel=0, config_no=0):
         data = self._get(
@@ -86,7 +86,7 @@ class DahuaCameraAPI:
             {"action": "getConfig", "name": "VideoInExposure"},
         )
 
-        return parse_response(data)
+        return parse_table_like_response(data)
 
     def GetVideoInOptionsConfig(self):
         data = self._get(
@@ -94,7 +94,7 @@ class DahuaCameraAPI:
             {"action": "getConfig", "name": "VideoInOptions"},
         )
 
-        return parse_response(data)
+        return parse_table_like_response(data)
 
     # 1 & 2: Color Mode
     def GetColorMode(self, channel=0):
@@ -102,7 +102,7 @@ class DahuaCameraAPI:
         if not response:
             return
 
-        j = parse_response(response)
+        j = parse_table_like_response(response)
         channel0_option = j.get("table", {}).get("VideoInOptions", [])[0]
 
         # return option code and description
@@ -123,7 +123,7 @@ class DahuaCameraAPI:
             "cgi-bin/configManager.cgi", {"action": "getConfig", "name": "VideoInZoom"}
         )
 
-        parsed = parse_response(response)
+        parsed = parse_table_like_response(response)
         return parsed
 
     def SetVideoInZoom(self, name, value, channel=0, config_no=0):
@@ -142,7 +142,7 @@ class DahuaCameraAPI:
             {"action": "getFocusStatus", "channel": channel},
         )
 
-        return parse_response(response)
+        return parse_table_like_response(response)
 
     def AdjustFocus(self, focus, zoom, channel=0):
         return self._set(
