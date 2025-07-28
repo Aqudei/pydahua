@@ -46,9 +46,9 @@ class DahuaCameraAPI:
             "cgi-bin/configManager.cgi",
             {"action": "getConfig", "name": "VideoInColor"},
         )
-        
+
         response = parse_table_like_response(data)
-        
+
         return response.get("VideoInColor", {}).get(channel)
 
     def SetVideoInColor(self, name, value, channel=0, configNo=0):
@@ -69,7 +69,7 @@ class DahuaCameraAPI:
         )
 
         response = parse_table_like_response(data)
-        
+
         return response.get("VideoInSharpness", {}).get(channel)
 
     def SetVideoInSharpness(self, name, value, channel=0, config_no=0):
@@ -90,31 +90,29 @@ class DahuaCameraAPI:
         )
 
         response = parse_table_like_response(data)
-        
+
         return response.get("VideoInExposure", {}).get(channel)
 
-    def GetVideoInOptionsConfig(self):
+    def GetVideoInOptionsConfig(self, channel=0):
         data = self._get(
             "cgi-bin/configManager.cgi",
             {"action": "getConfig", "name": "VideoInOptions"},
         )
 
-        return parse_table_like_response(data)
+        r = parse_table_like_response(data)
+        return r.get("VideoInOptions", {}).get(channel)
 
     # 1 & 2: Color Mode
     def GetColorMode(self, channel=0):
-        response = self.GetVideoInOptionsConfig()
+        response = self.GetVideoInOptionsConfig(channel)
         if not response:
             return
 
-        j = parse_table_like_response(response)
-        channel_option = j.get("VideoInOptions", {}).get(channel)
-
         # return option code and description
-        return channel_option.get("DayNightColor", -1), DAY_NIGHT_COLOR_MAP.get(
-            channel_option.get("DayNightColor", -1)
+        return response.get("DayNightColor", -1), DAY_NIGHT_COLOR_MAP.get(
+            response.get("DayNightColor", -1)
         )
-   
+
     # 3 & 4: Zoom Level
     def GetVideoInZoom(self):
         response = self._get(
