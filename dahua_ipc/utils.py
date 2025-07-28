@@ -1,39 +1,45 @@
 import re
-from collections import defaultdict
-from typing import Any
+from typing import Any, Union
 
-def set_nested_value(d: dict, keys: list, value: Any):
-    """Recursively set nested keys in a dict/list structure safely."""
+def set_nested_value(container: Union[dict, list], keys: list, value: Any):
+    """Set a nested value in a structure that can include dicts and lists."""
     for i, key in enumerate(keys):
-        if isinstance(key, int):
-            # Ensure list is long enough
-            while len(d) <= key:
-                d.append({})
-            if i == len(keys) - 1:
-                d[key] = value
-            else:
-                if not isinstance(d[key], (dict, list)):
-                    d[key] = {}
-                d = d[key]
-        else:
-            if i == len(keys) - 1:
-                d[key] = value
-            else:
-                if key not in d:
-                    # Decide if next is list or dict
-                    next_key = keys[i + 1]
-                    d[key] = [] if isinstance(next_key, int) else {}
-                d = d[key]
+        is_last = i == len(keys) - 1
+
+        if isinstance(container, dict):
+            if key not in container:
+                # Peek ahead to decide list or dict
+                next_key = keys[i + 1] if not is_last else None
+                container[key] = [] if isinstance(next_key, int) else {}
+            container = container[key]
+
+        elif isinstance(container, list):
+            # Ensure list is large enough
+            while len(container) <= key:
+                container.append({})
+
+            if is_last:
+                container[key] = value
+                return
+            if not isinstance(container[key], (dict, list)):
+                # Decide what to overwrite with
+                next_key = keys[i + 1]
+                container[key] = [] if isinstance(next_key, int) else {}
+            container = container[key]
+
+    if isinstance(container, dict):
+        container[keys[-1]] = value
 
 def parse_response(text: str):
     data = {}
     lines = text.strip().splitlines()
     for line in lines:
-        if not line.strip():
+        if '=' not in line:
             continue
         key, val = line.split('=', 1)
 
-        # Handle boolean, int, float, and string
+        # Convert value
+        val = val.strip()
         if val.lower() == 'true':
             val = True
         elif val.lower() == 'false':
@@ -45,20 +51,18 @@ def parse_response(text: str):
                 try:
                     val = float(val)
                 except ValueError:
-                    val = val.strip()
+                    pass  # Leave as string
 
-        # Parse keys
+        # Parse key into parts
         key_parts = []
         for part in key.split('.'):
-            # e.g. FocusRect[2] → ("FocusRect", 2)
             matches = re.findall(r'([^\[\]]+)|\[(\d+)\]', part)
-            for m in matches:
-                if m[0]:
-                    key_parts.append(m[0])
-                if m[1]:
-                    key_parts.append(int(m[1]))
+            for name, index in matches:
+                if name:
+                    key_parts.append(name)
+                if index:
+                    key_parts.append(int(index))
 
-        # Set the value safely
         set_nested_value(data, key_parts, val)
 
     return data
