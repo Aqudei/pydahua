@@ -20,5 +20,23 @@ if __name__ == "__main__":
     # print("Perform AutoFocus:")
     # dahua.AutoFocus()
 
-    r = dahua.GetVideoInColor()
-    print(r)
+    # List of all Get methods and their optional arguments
+    get_methods = [
+        ("GetVideoInColor", {"channel": 0}),
+        ("GetVideoInSharpness", {"channel": 0}),
+        ("GetVideoInExposure", {"channel": 0}),
+        ("GetVideoInOptionsConfig", {"channel": 0}),
+        ("GetColorMode", {"channel": 0}),
+        ("GetVideoInZoom", {}),
+        ("GetFocusStatus", {"channel": 0}),
+    ]
+
+    for method_name, kwargs in get_methods:
+        print(f"--- {method_name} ---")
+        try:
+            method = getattr(dahua, method_name)
+            result = method(**kwargs) if kwargs else method()
+            print(result)
+        except Exception as e:
+            print(f"Error calling {method_name}: {e}")
+        print()
