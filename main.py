@@ -16,7 +16,10 @@ if __name__ == "__main__":
         os.environ.get("CAM_PASS"),
     )
 
-    print("GetFocusStatus()\n",dahua.GetFocusStatus())
+    # print("GetFocusStatus()\n",dahua.GetFocusStatus())
     
-    print("Perform AutoFocus:")
-    dahua.AutoFocus()
+    # print("Perform AutoFocus:")
+    # dahua.AutoFocus()
+
+    r = dahua.GetVideoInColor()
+    print(r)
