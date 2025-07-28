@@ -48,8 +48,7 @@ class DahuaCameraAPI:
         )
 
         response = parse_response(data)
-        return response.get("table",{}).get("VideoInColor",[])[0]
-    
+        return response.get("table", {}).get("VideoInColor", {}).get("0")
 
     def SetVideoInColor(self, name, value, channel=0, configNo=0):
         data = self._get(
