@@ -120,7 +120,7 @@ class DahuaCameraAPI:
         )
 
         parsed = parse_table_like_response(response)
-        return parsed.get("table.VideoInZoom",{}).get(channel)
+        return parsed.get("table.VideoInZoom", {}).get(channel)
 
     def SetVideoInZoom(self, name, value, channel=0, config_no=0):
         return self._set(
@@ -139,7 +139,7 @@ class DahuaCameraAPI:
         )
 
         r = parse_table_like_response(response)
-        return r.get('status')
+        return r.get("status")
 
     def AdjustFocus(self, focus, zoom, channel=0):
         return self._set(
