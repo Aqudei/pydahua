@@ -1,7 +1,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 
-from dahua_ipc.utils import parse_table_like_response
+from .utils import parse_table_like_response
 
 
 DAY_NIGHT_COLOR_MAP = {
