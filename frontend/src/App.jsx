@@ -8,8 +8,8 @@ const API_BASE_URL = "http://127.0.0.1:5000";
 
 
 function App() {
-  const [data, setData] = useState({})
-
+  const [data, setData] = useState({});
+  const [result, setResult] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,6 +26,7 @@ function App() {
       params: data.params
     });
 
+    setResult(response.data);
     console.log(response);
 
   };
@@ -54,6 +55,16 @@ function App() {
         <textarea
           name='params'
           onChange={handleChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          rows="4"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Result</label>
+        <textarea
+          disabled
+          value={result}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           rows="4"
         />
