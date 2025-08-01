@@ -152,3 +152,7 @@ class DahuaCameraAPI:
         return self._set(
             "cgi-bin/devVideoInput.cgi", {"action": "autoFocus", "channel": channel}
         )
+
+    def Command(self, cgi, params):
+        cgi_path = cgi if cgi.endswith(".cgi") else f"{cgi}.cgi"
+        return self._get(f"cgi-bin/{cgi_path}", params)
