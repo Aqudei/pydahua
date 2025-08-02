@@ -26,7 +26,7 @@ function App() {
       params: data.params
     });
 
-    setResult(response.data);
+    setResult(JSON.stringify(response.data));
     console.log(response);
 
   };
