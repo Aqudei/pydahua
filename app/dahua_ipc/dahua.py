@@ -109,9 +109,23 @@ class DahuaCameraAPI:
             return
 
         # return option code and description
-        return response.get("DayNightColor", -1), DAY_NIGHT_COLOR_MAP.get(
-            response.get("DayNightColor", -1)
+
+        color_made_code = response.get("DayNightColor", -1)
+        color_mode_name = DAY_NIGHT_COLOR_MAP.get(color_made_code)
+
+        return {"color_mode_code": color_made_code, "color_mode_name": color_mode_name}
+
+    # 1 & 2: Color Mode
+    def SetColorMode(self, channel=0, color_mode_code=1):
+        response = self._set(
+            "cgi-bin/configManager.cgi",
+            {
+                "action": "setConfig",
+                f"VideoInOptions[{channel}].DayNightColor": color_mode_code,
+            },
         )
+
+        return response
 
     # 3 & 4: Zoom Level
     def GetVideoInZoom(self, channel=0):

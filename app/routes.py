@@ -16,3 +16,10 @@ def register_routes(app):
         data = request.get_json()
         result = app.cam.Command(data.get("cgi"), json.loads(data.get("params", "{}")))
         return jsonify({"message": "ok", "result": result})
+
+    @app.route("/set-color-mode/", methods=["POST"])
+    @cross_origin()
+    def set_color_mode():
+        data = request.get_json()
+        result = app.cam.SetColorMode(color_mode_code=data.get("color_mode",1))
+        return jsonify({"message": "ok", "result": result})
